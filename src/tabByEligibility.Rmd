@@ -1,0 +1,191 @@
+### Literal scenario
+
+```{r literal}
+
+pdata <- pdata %>%
+  mutate(eligi = rowSums(select(
+    .,
+    matches("^ie_in|^ie_ex")
+  ) == FALSE) > 0)
+impdata <- impdata %>%
+  mutate(eligi_imp = rowSums(select(
+    .,
+    matches("^ie_in|^ie_ex")
+  ) == FALSE) > 0)
+tabeldata <- left_join(pdata,
+  impdata %>% select(PatID, eligi_imp),
+  by = "PatID"
+) %>%
+  mutate_if(is_character, factor)
+
+tab.imp <- CreateTableOne(
+  vars = tabvars,
+  strata = "eligi_imp",
+  data = tabeldata
+)
+
+tab.imp <- print(tab.imp,
+  varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+  nonnormal = tabvars, test = TRUE,
+  catDigits = 1, contDigits = 1,
+  explain = FALSE
+)
+
+tab.comp <- CreateTableOne(
+  vars = tabvars,
+  strata = "eligi",
+  data = tabeldata %>% filter(nomissing)
+)
+
+tab.comp <- print(tab.comp,
+  varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+  nonnormal = tabvars, test = TRUE,
+  catDigits = 1, contDigits = 1,
+  explain = FALSE
+)
+
+tab.missasel <- CreateTableOne(
+  vars = tabvars,
+  strata = "eligi",
+  data = tabeldata
+)
+
+tab.missasel <- print(tab.missasel,
+  varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+  nonnormal = tabvars, test = TRUE,
+  catDigits = 1, contDigits = 1,
+  explain = FALSE
+)
+
+
+all <- cbind(tab.imp[, 1:3], tab.comp[, 1:3], tab.missasel[, 1:3])
+
+colnames(all) <- c(
+  rep(c("Eligible", "Not eligible", "p-value"), 3)
+)
+
+## Export to Excel
+write.xlsx(all, paste0("./output/tabs/tabByEligibilty_literal_karen_", Sys.Date(), ".xlsx"), rowNames = TRUE)
+
+rownamesadj <- rownames(all)
+
+## white space removed in kable function. Add HTML space.
+rownamesadj <- sub("^ ", "&nbsp;", rownamesadj)
+
+## add footer to indicated which variabels are used as eligibilty variables
+rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) %in% c(
+  elvars,
+  "raas",
+  "nonCVDeath3y"
+),
+paste0(rownamesadj, footnote_marker_symbol(1)), rownamesadj
+)
+
+rownames(all) <- rownamesadj
+
+
+myHeader <- c(" " = 1, "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3)
+names(myHeader) <- c(" ", "Imputed data", "Complete case", "Missing as eligible")
+
+footnote(mykable(all, row.names = TRUE) %>%
+  add_header_above(myHeader),
+symbol = c("Used in eligibility criteria. Note that other variables that are subsets or in other ways related to the variables used in the eligibilty criteria should be viewed with caution"),
+general = c("Categorical variables are presented with n (%) and tested with chi2-test and continous variables are presented with median [q1-q3] and tested with Mann-Whitney U test")
+)
+```
+
+### Pragmatic scenario
+
+```{r pragmatic}
+
+pdata <- pdata %>%
+  mutate(eligi = rowSums(select(
+    .,
+    matches("^ie_in_pragscen|^ie_in_labscen_in_pragscen|^ie_ex_pragscen|^ie_ex_labscen_ex_pragscen")
+  ) == FALSE) > 0)
+impdata <- impdata %>%
+  mutate(eligi_imp = rowSums(select(
+    .,
+    matches("^ie_in_pragscen|^ie_in_labscen_in_pragscen|^ie_ex_pragscen|^ie_ex_labscen_ex_pragscen")
+  ) == FALSE) > 0)
+tabeldata <- left_join(pdata,
+  impdata %>% select(PatID, eligi_imp),
+  by = "PatID"
+) %>%
+  mutate_if(is_character, factor)
+
+tab.imp <- CreateTableOne(
+  vars = tabvars,
+  strata = "eligi_imp",
+  data = tabeldata
+)
+
+tab.imp <- print(tab.imp,
+  varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+  nonnormal = tabvars, test = TRUE,
+  catDigits = 1, contDigits = 1,
+  explain = FALSE
+)
+
+tab.comp <- CreateTableOne(
+  vars = tabvars,
+  strata = "eligi",
+  data = tabeldata %>% filter(nomissing)
+)
+
+tab.comp <- print(tab.comp,
+  varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+  nonnormal = tabvars, test = TRUE,
+  catDigits = 1, contDigits = 1,
+  explain = FALSE
+)
+
+tab.missasel <- CreateTableOne(
+  vars = tabvars,
+  strata = "eligi",
+  data = tabeldata
+)
+
+tab.missasel <- print(tab.missasel,
+  varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+  nonnormal = tabvars, test = TRUE,
+  catDigits = 1, contDigits = 1,
+  explain = FALSE
+)
+
+
+all <- cbind(tab.imp[, 1:3], tab.comp[, 1:3], tab.missasel[, 1:3])
+
+colnames(all) <- c(
+  rep(c("Eligible", "Not eligible", "p-value"), 3)
+)
+
+## Export to Excel
+write.xlsx(all, paste0("./output/tabs/tabByEligibilty_pragmatic_karen_", Sys.Date(), ".xlsx"), rowNames = TRUE)
+
+rownamesadj <- rownames(all)
+
+## white space removed in kable function. Add HTML space.
+rownamesadj <- sub("^ ", "&nbsp;", rownamesadj)
+
+## add footer to indicated which variabels are used as eligibilty variables
+rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) %in% c(
+  elvars,
+  "raas",
+  "nonCVDeath3y"
+),
+paste0(rownamesadj, footnote_marker_symbol(1)), rownamesadj
+)
+
+rownames(all) <- rownamesadj
+
+
+myHeader <- c(" " = 1, "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3)
+names(myHeader) <- c(" ", "Imputed data", "Complete case", "Missing as eligible")
+
+footnote(mykable(all, row.names = TRUE) %>%
+  add_header_above(myHeader),
+symbol = c("Used in eligibility criteria. Note that other variables that are subsets or in other ways related to the variables used in the eligibilty criteria should be viewed with caution"),
+general = c("Categorical variables are presented with n (%) and tested with chi2-test and continous variables are presented with median [q1-q3] and tested with Mann-Whitney U test")
+)
+```

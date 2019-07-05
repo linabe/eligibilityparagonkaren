@@ -1,0 +1,151 @@
+---
+title: 'Statistical report: Eligibility PARAGON-HF in KaRen'
+subtitle: 'DRAFT'
+author: 'Statistician: Lina Benson'
+  
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: cosmo
+    highlight: textmate
+    number_sections: yes
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+    fig.height: 4
+    fig.width: 8
+link-citations: yes
+bibliography: references.bib
+nocite: '@*'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE, include = TRUE, comment = "",
+  warning = FALSE, message = FALSE, fig.pos = "H",
+  fig.path = "../output/figs/"
+)
+options(knitr.kable.NA = "")
+```
+
+```{r adjust_directory_if_needed, include=FALSE}
+# Uncomment lines below if rmd file is placed in a subdirectory
+knitr::opts_knit$set(root.dir = normalizePath("../"))
+```
+
+```{r load_project, include=FALSE}
+# 1. Set options in config/global.dcf
+# 2. Load packages listed in config/global.dcf
+# 3. Import functions and code in lib directory
+# 4. Load data in data directory
+# 5. Run data manipulations in munge directory
+library(ProjectTemplate)
+load.project()
+```             
+
+# Data handling
+
+## Data source
+
+File karen 539.txt prepared by Camilla Hage 2019-05-15 and karen_cvdeath.sas7bdat. 
+
+## Primary inclusion
+
+Included in the analysis: 
+
+```{r flow}
+mykable(flow)
+```
+
+First patient follow-up visit (when echo was performed): `r min(dmy(pdata$FSI_PREDAT))` and last patient: `r max(dmy(pdata$FSI_PREDAT))`. 
+
+## Created variables
+```{r codecreatevarspre, code = readLines("../munge/02-varsPreImp.R"), echo = TRUE, eval = FALSE}
+
+```
+[@nephro]
+```{r codecreatevarspost, code = readLines("../munge/04-varsPostImp.R"), echo = TRUE, eval = FALSE}
+
+```
+
+# Statistical analysis
+
+## Imputation 
+
+Imputation is performed for variables needed for the eligibility criteria using mice [@mice]. Since one specific value is needed for the criteria only one single imputation is performed using the variables specified in section [Baseline characteristics](#baschar). The analysis performed on the imputed dataset is considered the main analysis. 
+
+```{r}
+if (any(impdata$nomissing == FALSE)) print(paste0("Note to self: All eligibility variables are not imputed "))
+```
+
+## Scenarios
+
+The analysis is performed for three scenarios, the literal scenario (all available criteria), the pragmatic scenario and the label scenario (variations of). 
+
+## Consistency analysis
+
+### Complete case
+
+An analysis is also performed on a complete case dataset, where only patients with non-missing information for all eligibility variables are included. 
+
+### Missing assumed to be eligible
+
+An analysis is also performed were patients with missing values for eligibility variables were assumed to be eligible for inclusion for the criteria using the variables with missing values ("Missing as eligible"). 
+
+### History or presence of any other disease with a life expectancy of <3 years 
+
+In order to evaluate exclusion criteria 27 "History or presence of any other disease with a life expectancy of <3 years" we considered patients who actually died from a non-CV cause within 3 years from the registration in SwedeHF (and had 3 years follow-up) as not eligible. 
+
+# Results
+
+## Baseline characteristics {#baschar}
+
+Baseline characteristics are presented by patients in the completes case dataset (non missing observations for all eligibility variables) and patients with missing observations for any of the eligibility variables. Imputed values are not shown in the table. 
+
+```{r tab1, child = "../src/tab1.Rmd"}
+
+```
+
+## Inclusion/exclusion criteria
+
+The number prior to the respective criteria are indicating the numbers in Table 1 in [@paragon]. 
+
+The number and percentage indicates the remaining cohort after applying the respective criteria. The criteria are therefore not ordered and mutually exclusive.
+
+```{r incexl, child = "../src/incexl.Rmd"}
+
+```
+
+### Graph
+
+The graph is performed on the imputed data. 
+
+The size of the dots are dependent on how many patients were not eligible due to the respective inclusion/exclusion criteria. The width of the line connecting the dots shows the pairwise correlation between two criteria (wider is more correlated) where plum shows positive correlations and cyclamen shows negative correlations. Only pairwise correlations > 0.1 (literal scenario)/0.05 (pragmatic scenario) are shown in the graph.  
+
+```{r incexlgraph, child = "../src/incexlgraph.Rmd"}
+
+```
+
+## Baseline characteristics by eligibilty
+
+Baseline characteristics are presented by patients eligible and not eligible according to the three different calculations. Imputed values are not shown in the table. Note that variables used in the eligibilty criteria, or are subsets or in other ways related to the variables used in the eligibilty criteria, should be viewed with caution. 
+
+```{r tabel, child = "../src/tabByEligibility.Rmd"}
+
+```
+
+# Reproducibility
+
+## R session information
+
+`r sessionInfo()$R.version$version.string` [@r] is used, for more details see below.
+
+```{r sessinfo}
+sessionInfo()
+```
+
+## R code
+
+The R code for all data handling and statistical analyses are found: https://github.com/linabe/eligibilityparagonkaren. On publication, since this report is placed there, the repository will be made public in order to link to it from the resulting article for increased transparency and code sharing. No data or output is stored in the repository. 
+
+# References

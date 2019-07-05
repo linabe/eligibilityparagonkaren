@@ -1,0 +1,265 @@
+```{r}
+
+if (exists("flowtab")) rm(flowtab)
+
+Nimp <- nrow(impdata)
+Ncomp <- nrow(pdata %>% filter(nomissing))
+Nel <- nrow(pdata)
+
+
+flowtab <- data.frame("No of patients", Nimp, Ncomp, Nel)
+colnames(flowtab) <- c("", rep("out", 3))
+
+funcIEfake("**Inclusion criteria**")
+
+## USE HIS (prior to index), HIS2 (index), HIS3 () combo
+
+funcIEfake("1. Written informed consent must be obtained before any assessment is performed")
+
+funcIE(IND_YRS >= 50 | is.na(IND_YRS), 2, paste0(">=50 years of age"), inex = "in", pragscenie = TRUE)
+
+funcIEfake("3. LVEF >=45% by echocardiography during the screening epoch, or within 6 months prior to screening visit (in primary inclusion)")
+
+## ska MRA vara med diuretia inkl MRA (UP)
+funcIE(diur_any == TRUE | is.na(diur_any), 4, "Diuretic treatment", inex = "in")
+
+funcIE(FSI_NYHA %in% c("II", "III", "IV", "") | is.na(FSI_NYHA), 5,
+  "NYHA II-IV",
+  pragscenie = TRUE, inex = "in"
+)
+
+# Waiting for reply.
+funcIE(crit_structural_hd == "yes" | is.na(crit_structural_hd), 6,
+  "Structural heart disease",
+  inex = "in"
+)
+
+funcIE(
+  crit_ntprobnp == "yes" | is.na(crit_ntprobnp), 7,
+  "NT-proBNP/AF (all patients cosidered to be HF hospitalizised within previous 9 months",
+  pragscenie = TRUE, inex = "in"
+)
+
+funcSumIEAll(
+  "Eligible (literal scenario) only inclusion criteria",
+  "^ie_in"
+)
+funcSumIEAll(
+  "Eligible (pragmatic scenario) only inclusion criteria",
+  "^ie_in_pragscen"
+)
+
+funcIEfake("**Exclusion criteria**")
+
+funcIEfake("1. Any prior echocardiographic measurement of LVEF <40%")
+
+## not HIS_COR since then will include historic MI
+funcIE(
+  !cor_cur_any == TRUE | is.na(cor_cur_any), 2,
+  "Coronary syndrome prior to follow-up visit (at HIS2 or HIS3)"
+)
+
+funcIEfake("3. Any clinical event within the 6 months prior to visit 1 that could have reduced the LVEF (e.g., MI, CABG), unless an echocardiographic measurement was performed after the event confirming the LVEF to be >=45%")
+
+funcIEfake("4. Current acute decompensated HF requiring augmented therapy with diuretic agents, vasodilator agents, and/or inotropic drugs")
+
+funcIE(
+  !(ace_any == TRUE & arb_any == TRUE) | is.na(ace_any) | is.na(arb_any), 5,
+  "Patients who require treatment with both an ACEI and an ARB"
+)
+
+funcIEfake("6. History of hypersensitivity to any of the study drugs or to drugs of similar chemical classes")
+
+funcIEfake("7. Known history of angioedema")
+
+funcIEfake("8. a. Severe pulmonary disease including COPD (i.e.,requiring home oxygen, chronic nebulizer therapy, or chronic oral steroid therapy or hospitalized for pulmonary decompensation within 12 months)")
+
+funcIE(
+  !FSI_HEM / 10 < 10 | is.na(FSI_HEM), "8. b",
+  "Hemoglobin <10 g/dL"
+)
+
+funcIE(
+  !FSI_BMI_cat == "3.>40" | is.na(FSI_BMI_cat), "8. c",
+  "BMI >40 kg/m2"
+)
+
+funcIE(
+  !FSI_SBP >= 180 | is.na(FSI_SBP), "9. a",
+  "SBP >= 180 mmHg"
+)
+
+funcIE(
+  !crit_SBP_Adrugs == "yes" | is.na(crit_SBP_Adrugs), "9. b",
+  "SBP >150 mmHg and <180 mmHg at baseline, unless the patient is receiving 3 or more antihypertensive drugs"
+)
+
+funcIE(!FSI_SBP < 110 | is.na(FSI_SBP), "9. c", "SBP <110 mmHg", pragscenie = TRUE)
+
+funcIEfake("9. d. SBP <100 mm Hg or symptomatic hypotension as determined by the investigator at visit 103 or visit 199/201")
+
+funcIEfake("10. Use of other investigational drugs at the time of enrollment, or within 30 days 
+           or 5 half-lives of enrollment, whichever is longer")
+
+funcIEfake("11. Patients with history of any dilated cardiomyopathy, including peripartum cardiomyopathy, 
+           chemotherapy-induced cardiomyopathy, or viral myocarditis ")
+
+funcIEfake("12. Evidence of right-sided HF in the absence of left-sided structural heart disease")
+
+funcIEfake("13. Known pericardial constriction, genetic hypertrophic cardiomyopathy, or infiltrative cardiomyopathy")
+
+funcIEfake("14. Clinically significant congenital heart disease that could be the cause of the 
+           patient’s symptoms and signs of HF")
+
+funcIEfake("15. Presence of hemodynamically significant valvular heart disease in the opinion of the investigator")
+
+## not HIS_ASSSTROKE since then will include historic stroke
+funcIE(
+  !stroke_cur_any | is.na(stroke_cur_any), 16,
+  "Stroke prior to follow-up visit (at HIS2 or HIS3)"
+)
+
+funcIEfake("17. Coronary or carotid artery disease or valvular heart disease likely to require 
+           surgical or percutaneous intervention during the trial")
+
+# Don't use HIS3_RHYATTACH but below for consitency with SwedeHF
+funcIE(
+  !(EKG_VRATE > 110 & EKG_FIB_FLUT == "Yes") |
+    is.na(EKG_VRATE) | is.na(EKG_FIB_FLUT), 18,
+  "AF and HR >110"
+)
+
+funcIEfake("19. Patients with a cardiac resynchronization therapy device")
+
+funcIEfake("20. Patients with prior major organ transplant")
+
+funcIEfake("21. Any surgical or medical condition that in the opinion of the investigator 
+           may place the patient at higher risk from his/her participation in the study or 
+           is likely to prevent the patient from complying with the requirements of the 
+           study or completing the study")
+
+funcIEfake("22. Any surgical or medical condition that might significantly alter the absorption, 
+           distribution, metabolism, or excretion of study drugs, including but not limited 
+           to any of the following: any history of pancreatic injury, pancreatitis, or 
+           evidence of impaired pancreatic function/injury within the past 5 years")
+
+funcIE(
+  !liver_any == TRUE | is.na(liver_any), 23,
+  "History of Hepatic disease"
+)
+
+funcIE(
+  !MDRD_cat == "1.<30" | is.na(MDRD_cat), "24. a",
+  "eGFR (MDRD) < 30",
+  pragscenie = TRUE
+)
+
+funcIEfake("24. b. eGFR <25 ml/min/1.73 m2 at visit 103 or visit 199/201")
+funcIEfake("24. c. eGFR reduction >35% (compared with visit 1) at visit 103 or visit 199/201")
+funcIEfake("25. Presence of known functionally significant bilateral renal artery stenosis")
+
+funcIE(
+  !FSI_K > 5.2 | is.na(FSI_K), "26. a",
+  "Potassium > 5.2"
+)
+
+funcIEfake("26. b. Serum potassium >5.4 mmol/l (mEq/l) at visit 103 or visit 199/201 ")
+
+# Waiting for reply.
+funcIE(!nonCVDeath3y == "yes" | is.na(nonCVDeath3y), 27,
+  "Death within 3 years from non-CV casue",
+  cvdeathie = TRUE
+)
+
+funcIEfake("28. History of noncompliance to medical regimens and patients who are considered potentially unreliable")
+
+funcIEfake("29. History or evidence of drug or alcohol abuse within the past 12 months")
+
+funcIEfake("30. Persons directly involved in the execution of this protocol")
+
+funcIE(
+  !cancer_any == TRUE | is.na(cancer_any), 31,
+  "Malignancy (other than localized basal or squamous cell carcinoma of the skin or 
+  localized prostate cancer) within the past 5 years prior to index"
+)
+
+funcIEfake("32. Pregnant or nursing (lactating) women, where pregnancy is defined as the state of 
+           a female after conception and until the termination of gestation, confirmmed by 
+           a positive human chorionic gonadotropin laboratory test")
+funcIEfake("33. Women of child-bearing potential, defined as all women physiologically 
+           capable of becoming pregnant, unless they are using highly effective methods of 
+           contraception during dosing and for 7 days off study drug")
+
+colnames(flowtab) <- c(
+  "Criteria",
+  "Imputed data",
+  "Complete case",
+  "Missing as eligible"
+)
+
+funcSumIEAll(
+  "Eligible (literal scenario) only exclusion criteria",
+  "^ie_ex"
+)
+funcSumIEAll(
+  "Eligible (pragmatic scenario) only exclusion criteria",
+  "^ie_ex_pragscen"
+)
+funcSumIEAll(
+  "Eligible (all criteria)",
+  "^ie_in|^ie_ex"
+)
+funcSumIEAll(
+  "Eligible (pragmatic scenario)",
+  "^ie_in_pragscen|^ie_ex_pragscen"
+)
+funcSumIEAll("Eligible (literal scenario, with criteria non CV death within 3 years)",
+  "^ie_in|^ie_ex|^ie_cvdeath_ex",
+  filtvar = "nonCVDeath3y"
+)
+funcSumIEAll(
+  "Eligible (label scenario with NYHA (incl 5) and eGFR (excl 24a))",
+  "ie_in_pragscen_in5|ie_ex_pragscen_ex24a"
+)
+funcSumIEAll(
+  "Eligible (label scenario with NYHA (incl 5) and NP (incl 7))",
+  "ie_in_pragscen_in5|ie_in_pragscen_in7"
+)
+funcSumIEAll(
+  "Eligible (label scenario with NYHA (incl 5) and diuretics (incl 4))",
+  "ie_in_pragscen_in5|ie_in4"
+)
+funcSumIEAll(
+  "Eligible (label scenario with NYHA (incl 5) and structural (incl 6))",
+  "ie_in_pragscen_in5|ie_in6"
+)
+funcSumIEAll(
+  "Eligible (label scenario with NYHA (incl 5), NP (incl7) and diuretics (incl 4))",
+  "ie_in_pragscen_in5|ie_in_pragscen_in7|ie_in4"
+)
+funcSumIEAll(
+  "Eligible (label scenario with NYHA (incl 5), eGFR (excl 24a) and NP (incl7))",
+  "ie_in_pragscen_in5|ie_ex_pragscen_ex24a|ie_in_pragscen_in7"
+)
+funcSumIEAll(
+  "Eligible (label scenario with NYHA (incl 5), eGFR (excl 24a) and diuretics (incl 4))",
+  "ie_in_pragscen_in5|ie_ex_pragscen_ex24a|ie_in4"
+)
+funcSumIEAll(
+  "Eligible (label scenario with NYHA (incl 5), eGFR (excl 24a), diuretics (incl 4) and NP (incl7))",
+  "ie_in_pragscen_in5|ie_ex_pragscen_ex24a|ie_in4|ie_in_pragscen_in7"
+)
+
+footnote(mykable(flowtab), # %>%
+  # pack_rows("Inclusion criteria", 2, 8) %>%
+  # pack_rows("Exclusion criteria", 9, nrow(flowtab) - 2),
+  symbol = c(
+    "Analysed for consistency, not used in final eligibility calculation",
+    "Only patients with 3 years follow-up",
+    "Included in pragmatic scenario"
+  )
+)
+
+## Export to Excel
+write.xlsx(flowtab, paste0("./output/tabs/tabincexc_karen_", Sys.Date(), ".xlsx"), rowNames = FALSE)
+```
