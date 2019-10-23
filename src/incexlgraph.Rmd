@@ -7,7 +7,7 @@ funcIEgraph <- function(ievars, corcutoff) {
     # col <- graphdatacor %>%
     mutate(absr = abs(r))
 
-  sizenodes <- graphdata %>% summarise_all(.funs ~ 1 - sum(.) / n()) %>% as.numeric()
+  sizenodes <- graphdata %>% summarise_all(list(~ 1 - sum(.) / n())) %>% as.numeric()
   nodes <- data.frame(cbind(id = colnames(graphdata), size = sizenodes))
 
   g <- graph_from_data_frame(graphdatacor, directed = FALSE, vertices = nodes)
@@ -45,7 +45,7 @@ funcIEgraph <- function(ievars, corcutoff) {
 #### Literal scenario
 
 ```{r literal graph, dev='win.metafile', fig.show = 'hide'}
-funcIEgraph("^ie_in|^ie_ex", 0.1)
+funcIEgraph(ievars = "^ie_in|^ie_ex", corcutoff = 0.1)
 ```
 
 ```{r literal graph for report}
