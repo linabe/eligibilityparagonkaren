@@ -52,9 +52,8 @@ pdata <- pdata %>%
       HIS_ASSCURSMO == "No" & HIS2_ASSCURSMO == "No" & HIS3_ASSCURSMO == "No" ~ "Never"
     ),
 
-    diabetes1_any = rowSums(select(., HIS_ASSDIAB1, HIS2_ASSDIAB1, HIS3_ASSDIAB1) == "Yes") > 0,
-    diabetes2_any = rowSums(select(., HIS_ASSDIAB2, HIS2_ASSDIAB2, HIS3_ASSDIAB2) == "Yes") > 0,
-
+    diabetes_any = rowSums(select(., HIS_ASSDIAB1, HIS2_ASSDIAB1, HIS3_ASSDIAB1, HIS_ASSDIAB2, HIS2_ASSDIAB2, HIS3_ASSDIAB2) == "Yes") > 0,
+    
     heartvalvesurgery_any = rowSums(select(
       .,
       HIS_SURAORREPA, HIS2_SURAORREPA, HIS3_SURAORREPA,
@@ -88,8 +87,8 @@ pdata <- pdata %>%
     MDRD_cat = case_when(
       is.na(MDRD) ~ NA_character_,
       MDRD < 30 ~ "1.<30",
-      MDRD < 60 ~ "2.30-<60",
-      MDRD >= 60 ~ "3.>=60"
+      MDRD <= 60 ~ "2.30-60",
+      MDRD > 60 ~ "3.>60"
     ),
     logFSI_PROBNP = log10(FSI_PROBNP),
     ## noncv death
@@ -109,10 +108,12 @@ pdata <- pdata %>%
     ),
     FSI_BMI_cat = case_when(
       is.na(FSI_BMI) ~ NA_character_,
-      FSI_BMI <= 30 ~ "1.<=30",
-      FSI_BMI <= 40 ~ "2.>30-40",
+      FSI_BMI < 30 ~ "1.<30",
+      FSI_BMI <= 40 ~ "2.30-40",
       FSI_BMI > 40 ~ "3.>40"
     ),
-    indexYear = year(dmy(FSI_PREDAT))
+    indexYear = year(dmy(FSI_PREDAT)),
+    EFgroup57 = case_when(VG10 <= 57 ~ "<=57",
+                          VG10 > 57 ~ ">57")
   ) %>%
   select(-FSI_PROBNP)

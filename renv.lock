@@ -196,10 +196,10 @@
     },
     "htmltools": {
       "Package": "htmltools",
-      "Version": "0.3.6",
+      "Version": "0.4.0",
       "Source": "CRAN",
       "Repository": "CRAN",
-      "Hash": "5132526e7fb28a2c20d1ef443d5c4644"
+      "Hash": "639ced211d4574cb149a7906b22e110f"
     },
     "jomo": {
       "Package": "jomo",

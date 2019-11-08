@@ -29,8 +29,7 @@ impvars <- pdata %>%
     smoking,
     FSI_BMI_cat,
     hypertension_any,
-    diabetes1_any,
-    diabetes2_any,
+    diabetes_any,
     ihd_any,
     cor_cur_any,
     pvd_any,
@@ -48,9 +47,9 @@ impdata <- mice::complete(imp, 1)
 
 # IND_ETHNIC not imputed since to few values other than Caucasion
 
-## vars not in imputaion model but needed for eligibilty criteria evaluation
-impdata <- cbind(impdata, pdata %>% select(nonCVDeath3y, PatID, diur_no)) %>%
-  mutate_if(is.factor, as.character) %>%
+## vars not in imputation model but needed for eligibilty criteria evaluation
+impdata <- cbind(impdata, 
+                     pdata %>% select(PatID, diur_no, EFgroup57)) %>%
   mutate(diur_no = case_when(
     !is.na(diur_no) ~ diur_no,
     is.na(diur_no) & diur_any ~ 1,

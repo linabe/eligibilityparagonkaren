@@ -10,7 +10,7 @@ output:
     highlight: textmate
     number_sections: yes
     toc: yes
-    toc_depth: 2
+    toc_depth: 4
     toc_float: yes
     fig.height: 4
     fig.width: 8
@@ -60,11 +60,11 @@ mykable(flow)
 First patient follow-up visit (when echo was performed): `r min(dmy(pdata$FSI_PREDAT))` and last patient: `r max(dmy(pdata$FSI_PREDAT))`. 
 
 ## Created variables
-```{r codecreatevarspre, code = readLines("../munge/02-varsPreImp.R"), echo = TRUE, eval = FALSE}
+```{r codecreatevarspre, code = readLines("../munge/03-varsPreImp.R"), echo = TRUE, eval = FALSE}
 
 ```
 [@nephro]
-```{r codecreatevarspost, code = readLines("../munge/04-varsPostImp.R"), echo = TRUE, eval = FALSE}
+```{r codecreatevarspost, code = readLines("../munge/05-varsPostImp.R"), echo = TRUE, eval = FALSE}
 
 ```
 
@@ -77,6 +77,10 @@ Imputation is performed for variables needed for the eligibility criteria using 
 ```{r}
 if (any(impdata$nomissing == FALSE)) print(paste0("Note to self: All eligibility variables are not imputed "))
 ```
+
+## Subgroup analysis
+
+In addition all analyses are also performed seperatly for females and males.  
 
 ## Scenarios
 
@@ -91,10 +95,6 @@ An analysis is also performed on a complete case dataset, where only patients wi
 ### Missing assumed to be eligible
 
 An analysis is also performed were patients with missing values for eligibility variables were assumed to be eligible for inclusion for the criteria using the variables with missing values ("Missing as eligible"). 
-
-### History or presence of any other disease with a life expectancy of <3 years 
-
-In order to evaluate exclusion criteria 27 "History or presence of any other disease with a life expectancy of <3 years" we considered patients who actually died from a non-CV cause within 3 years from the registration in SwedeHF (and had 3 years follow-up) as not eligible. 
 
 # Results
 

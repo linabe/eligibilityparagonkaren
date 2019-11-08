@@ -1,100 +1,132 @@
 ```{r}
 
-check_allimpel <- !names(impdata)[!grepl("crit_|anyie|nomissing|ie_tmp|indexYear|arb_any|ace_any|logFSI_PROBNP|PatID|diur_no|ie_", names(impdata))] %in% tabvars
+# check_allimpel <- !names(impdata)[!grepl("crit_|anyie|nomissing|ie_tmp|indexYear|arb_any|ace_any|logFSI_PROB#NP|PatID|diur_no|ie_", names(impdata))] %in% tabvars
 
-if (any(check_allimpel)) {
-  print(paste0(
-    "Note to self: All imputed/eligibility variables are not included in table 1 ",
-    names(impdata)[!grepl(
-      "crit_|anyie|nomissing|ie_tmp|indexYear|arb_any|ace_any|logFSI_PROBNP|PatID|diur_no|ie_",
-      names(impdata)
-    )][check_allimpel]
-  ))
-}
+# if (any(check_allimpel)) {
+#  print(paste0(
+#    "Note to self: All imputed/eligibility variables are not included in table 1 ",
+#    names(impdata)[!grepl(
+#      "crit_|anyie|nomissing|ie_tmp|indexYear|arb_any|ace_any|logFSI_PROBNP|PatID|diur_no|ie_",
+#      names(impdata)
+#    )][check_allimpel]
+#  ))
+# }
 
-tab1.strat <- CreateTableOne(
-  vars = tabvars,
-  strata = "nomissing",
-  data = pdata
-)
+tab1Func <- function(pop, nr = NULL, export = FALSE) {
+  
+  tab1data <- pdata %>%
+    filter(!!enexpr(pop))
+    
+  tab1.strat <- CreateTableOne(
+    vars = tabvars,
+    strata = "nomissing",
+    data = tab1data
+  )
 
-strat <- print(tab1.strat,
-  varLabels = TRUE, missing = TRUE, printToggle = FALSE, nonnormal = tabvars, test = FALSE,
-  catDigits = 1, contDigits = 1,
-  explain = FALSE
-)
+  strat <- print(tab1.strat,
+    varLabels = TRUE, missing = TRUE, printToggle = FALSE, nonnormal = tabvars, test = FALSE,
+    catDigits = 1, contDigits = 1,
+    explain = FALSE
+  )
 
-tab1.overall <- CreateTableOne(
-  vars = tabvars,
-  data = pdata
-)
+  tab1.overall <- CreateTableOne(
+    vars = tabvars,
+    data = tab1data
+  )
 
-overall <- print(tab1.overall,
-  varLabels = TRUE, missing = FALSE, printToggle = FALSE, nonnormal = tabvars,
-  catDigits = 1, contDigits = 1,
-  explain = FALSE
-)
+  overall <- print(tab1.overall,
+    varLabels = TRUE, missing = FALSE, printToggle = FALSE, nonnormal = tabvars,
+    catDigits = 1, contDigits = 1,
+    explain = FALSE
+  )
 
-all <- cbind(overall[, 1], strat)
+  all <- cbind(overall[, 1], strat)
 
-colnames(all) <- c(
-  "Whole cohort", "Missing for any eligibilty variable",
-  "No missing for any eligibilty variable", "Missing (%)"
-)
+  colnames(all) <- c(
+    "Whole cohort", "Missing for any eligibilty variable",
+    "No missing for any eligibilty variable", "Missing (%)"
+  )
 
-## Export to Excel
-write.xlsx(all, paste0("./output/tabs/tab1_karen_", Sys.Date(), ".xlsx"), rowNames = TRUE)
+  ## Export to Excel
+  if (export) write.xlsx(all, paste0("./output/tabs/tab1_karen_", Sys.Date(), ".xlsx"), rowNames = TRUE)
 
-rownamesadj <- rownames(all)
+  rownamesadj <- rownames(all)
 
-## white space removed in kable function. Add HTML space.
-rownamesadj <- sub("^ ", "&nbsp;", rownamesadj)
+  ## white space removed in kable function. Add HTML space.
+  rownamesadj <- sub("^ ", "&nbsp;", rownamesadj)
 
-## add footer to indicated which variabels are used as eligibilty variables
-rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) %in% c(
-  elvars,
-  "raas",
-  "nonCVDeath3y"
-),
-paste0(rownamesadj, footnote_marker_symbol(1)), rownamesadj
-)
-
-## add footer to indicated which variabels are used in imputation
-rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) %in% c(
-  names(impvars),
-  "indexYear_cat",
-  "FSI_PROBNP",
-  "raas"
-),
-paste0(rownamesadj, footnote_marker_symbol(2)), rownamesadj
-)
-
-## add footer to indicate that indexyear was included as a continous variable in imputation model
-rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) == "indexYear_cat",
-  paste0(rownamesadj, footnote_marker_symbol(3)), rownamesadj
-)
-
-## add footer to indicate that ntProBNP is included as log in imputation model
-rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) == "FSI_PROBNP",
-  paste0(rownamesadj, footnote_marker_symbol(4)), rownamesadj
-)
-
-## add footer to indicate that raas included as acei and arb separatly in model
-rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) == "raas",
-  paste0(rownamesadj, footnote_marker_symbol(5)), rownamesadj
-)
-
-
-rownames(all) <- rownamesadj
-
-footnote(mykable(all, row.names = TRUE),
-  symbol = c(
-    "Used in eligibility criteria",
-    "Included in imputation model",
-    "In imputation model index year is included as a continous variable",
-    "In imputation model log(FSI_PROBNP) is included",
-    "In imputation model and eligibility calculation ACEi and arb are included separetly"
+  ## add footer to indicated which variabels are used as eligibilty variables
+  rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) %in% c(
+    elvars,
+    "raas",
+    "nonCVDeath3y"
   ),
-  general = c("Categorical variables are presented with n (%) and continous variables with median [q1-q3]")
-)
+  paste0(rownamesadj, footnote_marker_symbol(1)), rownamesadj
+  )
+
+  ## add footer to indicated which variabels are used in imputation
+  rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) %in% c(
+    names(impvars),
+    "indexYear_cat",
+    "FSI_PROBNP",
+    "raas"
+  ),
+  paste0(rownamesadj, footnote_marker_symbol(2)), rownamesadj
+  )
+
+  ## add footer to indicate that indexyear was included as a continous variable in imputation model
+  rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) == "indexYear_cat",
+    paste0(rownamesadj, footnote_marker_symbol(3)), rownamesadj
+  )
+
+  ## add footer to indicate that ntProBNP is included as log in imputation model
+  rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) == "FSI_PROBNP",
+    paste0(rownamesadj, footnote_marker_symbol(4)), rownamesadj
+  )
+
+  ## add footer to indicate that raas included as acei and arb separatly in model
+  rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) == "raas",
+    paste0(rownamesadj, footnote_marker_symbol(5)), rownamesadj
+  )
+
+
+  rownames(all) <- rownamesadj
+
+  footnote(mykable(all, row.names = TRUE),
+    symbol = c(
+      "Used in eligibility criteria",
+      "Included in imputation model",
+      "In imputation model index year is included as a continous variable",
+      "In imputation model log(FSI_PROBNP) is included",
+      "In imputation model and eligibility calculation ACEi and arb are included separetly"
+    ),
+    general = c("Categorical variables are presented with n (%) and continous variables with median [q1-q3]")
+  )
+}
+```
+
+
+### Overall
+```{r baseoverall}
+tab1Func(!is.na(IND_YRS))
+```
+
+### Subgroup: Females
+```{r basef}
+tab1Func(IND_GEN == "Female")
+```
+
+### Subgroup: Males
+```{r basem}
+tab1Func(IND_GEN == "Male")
+```
+
+### Subgroup: EF <= 57%
+```{r baseu57}
+tab1Func(EFgroup57 == "<=57")
+```
+
+### Subgroup: EF > 57%
+```{r baseo57}
+tab1Func(EFgroup57 == ">57")
 ```

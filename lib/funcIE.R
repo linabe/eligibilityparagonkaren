@@ -1,6 +1,29 @@
+funcIE <- function(ie, ienr, iedesc, inex = "ex", noie = FALSE, pragscenie = FALSE) {
+  ieprefix <- paste0("ie_")
+
+  if (noie) {
+    ieprefix <- paste0(ieprefix, "no_")
+  }
+  if (pragscenie) {
+    ieprefix <- paste0(ieprefix, inex, "_pragscen_")
+  }
+
+  iename <- paste0(ieprefix, inex, sub(". ", "", ienr))
+
+  impdata <<- impdata %>%
+    mutate(
+      !!iename := !!enexpr(ie)
+    ) # global
+  pdata <<- pdata %>%
+    mutate(
+      !!iename := !!enexpr(ie)
+    ) # global
+}
+
+
 funcSumIE <- function(indata, groupvar) {
   groupvar <- enexpr(groupvar)
-
+  
   indata %>%
     filter(!is.na(UQ(rlang::sym(groupvar)))) %>%
     group_by(UQ(rlang::sym(groupvar))) %>%
@@ -15,84 +38,45 @@ funcSumIE <- function(indata, groupvar) {
     select(out)
 }
 
-
-funcIE <- function(ie, ienr, iedesc, inex = "ex", cvdeathie = FALSE, noie = FALSE, pragscenie = FALSE) {
-  iedesc <- paste0(ienr, ". ", iedesc)
-  ieprefix <- paste0("ie_")
-
-  if (noie) {
-    iedesc <- paste0(iedesc, footnote_marker_symbol(1))
-    ieprefix <- paste0(ieprefix, "no_")
-  }
-  if (cvdeathie) {
-    iedesc <- paste0(iedesc, footnote_marker_symbol(1))
-    iedesc <- paste0(iedesc, footnote_marker_symbol(2))
-    ieprefix <- paste0(ieprefix, "cvdeath_")
-  }
-  if (pragscenie) {
-    iedesc <- paste0(iedesc, footnote_marker_symbol(3))
-    ieprefix <- paste0(ieprefix, inex, "_pragscen_")
-  }
-
-  iename <- paste0(ieprefix, inex, sub(". ", "", ienr))
-
-  impdata <<- impdata %>%
-    mutate(
-      !!iename := !!enexpr(ie)
-    ) # global
-  pdata <<- pdata %>%
-    mutate(
-      !!iename := !!enexpr(ie)
-    ) # global
-
+funcIETab <- function(ievar, iedesc, impdata_tmp, pdata_tmp) {
   flowtab_tmp <- unlist(c(
     iedesc,
-    funcSumIE(impdata, !!iename),
-    funcSumIE(pdata %>% filter(nomissing), !!iename),
-    funcSumIE(pdata, !!iename)
+    funcSumIE(impdata_tmp, groupvar = !!ievar),
+    funcSumIE(pdata_tmp %>% filter(nomissing), groupvar = !!ievar),
+    funcSumIE(pdata_tmp, groupvar = !!ievar)
   ))
-
-  if (exists("flowtab")) {
-    flowtab <<- rbind(flowtab, flowtab_tmp) # global variable, writes to global env
-  } else {
-    flowtab <<- flowtab_tmp # global variable, writes to global env
-  }
+  return(flowtab_tmp)
 }
 
-funcSumIEAll <- function(iesumname, ievars, filtvar = NULL) {
+
+funcSumIEAll <- function(iesumname, ievars, impdata_tmp, pdata_tmp, filtvar = NULL) {
   if (!is.null(filtvar)) {
-    impdata <- impdata %>%
+    impdata_tmp <- impdata_tmp %>%
       filter(!is.na(UQ(rlang::sym(filtvar))))
-    pdata <- pdata %>%
+    pdata_tmp <- pdata_tmp %>%
       filter(!is.na(UQ(rlang::sym(filtvar))))
   }
-
+  
   tempflowtab <- unlist(c(
     iesumname,
-    funcSumIE(impdata %>%
-      mutate(sumanyie = rowSums(select(., matches(ievars)) == FALSE) == 0),
-    groupvar = "sumanyie"
+    funcSumIE(impdata_tmp %>%
+                mutate(sumanyie = rowSums(select(., matches(ievars)) == FALSE) == 0),
+              groupvar = "sumanyie"
     ),
-    funcSumIE(pdata %>%
-      mutate(sumanyie = rowSums(select(., matches(ievars)) == FALSE) == 0) %>%
-      filter(nomissing),
-    groupvar = "sumanyie"
+    funcSumIE(pdata_tmp %>%
+                mutate(sumanyie = rowSums(select(., matches(ievars)) == FALSE) == 0) %>%
+                filter(nomissing),
+              groupvar = "sumanyie"
     ),
-    funcSumIE(pdata %>%
-      mutate(sumanyie = rowSums(select(., matches(ievars)) == FALSE) == 0),
-    groupvar = "sumanyie"
+    funcSumIE(pdata_tmp %>%
+                mutate(sumanyie = rowSums(select(., matches(ievars)) == FALSE) == 0),
+              groupvar = "sumanyie"
     )
   ))
-
-  flowtab <<- rbind(flowtab, tempflowtab) # global variable
+  return(tempflowtab)
 }
 
 funcIEfake <- function(iedesc) {
-  flowtab_tmp <- c(iedesc, rep(NA, 4))
-
-  if (exists("flowtab")) {
-    flowtab <<- rbind(flowtab, flowtab_tmp) # global variable, writes to global env
-  } else {
-    flowtab <<- flowtab_tmp # global variable, writes to global env
-  }
+  flowtab_tmp <- c(iedesc, rep(NA, 3))
+  return(flowtab_tmp)
 }

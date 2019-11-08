@@ -1,67 +1,6 @@
 
 # Create criteria variables POST imputation -------------------------------
 
-elvars <- c(
-  "IND_YRS", "diur_any",
-  "FSI_NYHA",
-  "F21", "F22", "VG1", "VG4", "VOG",
-  "FSI_PROBNP",
-  "EKG_FIB_FLUT",
-  "cor_cur_any",
-  "ace_any", "arb_any",
-  "FSI_HEM", "FSI_BMI_cat",
-  "FSI_SBP", "mra_any", "bbl_any", "cc_any",
-  "stroke_cur_any",
-  "EKG_VRATE",
-  "MDRD_cat",
-  "FSI_K",
-  "cancer_any",
-  "liver_any"
-)
-
-tabvars <- c(
-  "IND_GEN",
-  "IND_YRS",
-  "IND_ETHNIC",
-  "indexYear_cat",
-  "ef",
-  "FSI_NYHA",
-  "EKG_FIB_FLUT",
-  "F21", "F22", "VG1", "VG4", "VOG",
-  "FSI_SBP", "FSI_DBP",
-  "EKG_VRATE",
-  "MDRD_cat",
-  "FSI_HEM",
-  "FSI_PROBNP",
-  "FSI_K",
-  "raas",
-  "mra_any",
-  "diur_any",
-  "nitrate_any",
-  "antiplat_any",
-  "anticoag_any",
-  "statin_any",
-  "bbl_any",
-  "cc_any",
-  "smoking",
-  "FSI_BMI_cat",
-  "hypertension_any",
-  "diabetes1_any",
-  "diabetes2_any",
-  "ihd_any",
-  "pci_cabg_any",
-  "cor_cur_any",
-  "pvd_any",
-  "stroke_any",
-  "stroke_cur_any",
-  "valvular_any",
-  "heartvalvesurgery_any",
-  "copd_any",
-  "liver_any",
-  "cancer_any",
-  "nonCVDeath3y"
-)
-
 fixdata <- function(indata) {
   utdata <- indata %>%
     mutate(
@@ -103,7 +42,8 @@ fixdata <- function(indata) {
   utdata <- utdata %>%
     select(!!!elvars) %>%
     transmute(nomissing = rowSums(is.na(.)) == 0) %>%
-    bind_cols(utdata, .)
+    bind_cols(utdata, .) %>%
+    mutate_if(is_character, factor)
 
   return(utdata)
 }
