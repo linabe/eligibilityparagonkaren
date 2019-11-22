@@ -15,11 +15,11 @@ tabElFunc <- function(pop, nr = NULL, export = FALSE) {
       .,
       matches("^ie_in|^ie_ex")
     ) == FALSE) > 0)
-  
+
   tabeldata.lit <- left_join(pdata_tmp,
     impdata_tmp %>% select(PatID, eligi_imp),
     by = "PatID"
-  ) 
+  )
 
   tab.imp.lit <- CreateTableOne(
     vars = tabvars,
@@ -74,7 +74,7 @@ tabElFunc <- function(pop, nr = NULL, export = FALSE) {
       .,
       matches("^ie_in_pragscen|^ie_in_labscen_in_pragscen|^ie_ex_pragscen|^ie_ex_labscen_ex_pragscen")
     ) == FALSE) > 0)
-  
+
   tabeldata.prag <- left_join(
     pdata_tmp,
     impdata_tmp %>% select(PatID, eligi_imp),
@@ -138,26 +138,28 @@ tabElFunc <- function(pop, nr = NULL, export = FALSE) {
   ## white space removed in kable function. Add HTML space.
   rownamesadj <- sub("^ ", "&nbsp;", rownamesadj)
 
-  ## add footer to indicated which variabels are used as eligibilty variables
-  rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) %in% c(
-    elvars,
-    "raas"
-  ),
-  paste0(rownamesadj, footnote_marker_symbol(1)), rownamesadj
-  )
-
   rownames(all) <- rownamesadj
 
 
-  myHeader <- c(" " = 1, "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3,
-                "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3)
-  names(myHeader) <- c(" ", "Imputed data", "Complete case", "Missing as eligible", 
-                       "Imputed data", "Complete case", "Missing as eligible")
+  myHeader <- c(
+    " " = 1, "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3,
+    "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3
+  )
+  names(myHeader) <- c(
+    " ", "Imputed data", "Complete case", "Missing as eligible",
+    "Imputed data", "Complete case", "Missing as eligible"
+  )
+
+  myHeader2 <- c(" " = 1, "Literal scenario" = 9, "Pragmatic scenario" = 9)
+  names(myHeader2) <- c(" ", "Literal scenario", "Pragmatic scenario")
 
   footnote(mykable(all, row.names = TRUE) %>%
-    add_header_above(myHeader),
-  symbol = c("Used in eligibility criteria. Note that other variables that are subsets or in other ways related to the variables used in the eligibilty criteria should be viewed with caution"),
-  general = c("Categorical variables are presented with n (%) and tested with chi2-test and continous variables are presented with median [q1-q3] and tested with Mann-Whitney U test")
+    add_header_above(myHeader) %>%
+    add_header_above(myHeader2),
+  general = c(
+    "Categorical variables are presented with n (%) and tested with chi2-test and continous variables are presented with median [q1-q3] and tested with Mann-Whitney U test",
+    "Note that other variables that are subsets or in other ways related to the variables used in the eligibilty criteria should be viewed with caution"
+  )
   )
 }
 ```

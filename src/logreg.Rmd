@@ -1,0 +1,118 @@
+```{r}
+
+logregFunc <- function(filt, filtname) {
+  if (filtname %in% c("female", "male")) {
+    modvars <- modvars[modvars != "IND_GEN"]
+    adjmodvars <- adjmodvars[adjmodvars != "IND_GEN"]
+  }
+
+  kontunits <- data.frame(
+    vars = c("IND_YRS"), # "hb", "GFR", "ntProBNP"),
+    units = c(10) # , 20, 20, 100)
+  )
+
+
+  myor <- function(xvar, filt2 = filt) {
+    nval <- ifelse(is.factor(pdata[, xvar][[1]]), nlevels(pdata[, xvar][[1]]), 2)
+
+    units <- ifelse(xvar %in% kontunits$var, kontunits[kontunits$var == xvar, "units"], 1)
+
+    cmod <- my.glm.mids(formula(paste0("EFgroup57 == '<=57' ~ ", xvar)),
+      family = binomial(link = "logit"), data = implogreg, subset = filt2
+    )
+
+    scmod <- summary(pool(cmod))
+
+    p <- dF(scmod$p.value[2:nval], dig = 3)
+    p <- replace(p, p == "0.000", "<0.001")
+
+    ortmp <- cbind(rownames(scmod)[2:nval], paste0(
+      dF(exp(scmod$estimate[2:nval] * units), dig = 2),
+      " (", dF(exp((scmod$estimate[2:nval] - z05 * scmod$std.error[2:nval]) * units), dig = 2),
+      "-", dF(exp((scmod$estimate[2:nval] + z05 * scmod$std.error[2:nval]) * units), dig = 2), "), ",
+      p
+    ))
+    if (exists("ortab")) {
+      ortab <<- rbind(ortab, ortmp)
+    } else {
+      ortab <<- ortmp
+    }
+  }
+
+  if (exists("ortab")) rm(ortab, envir = .GlobalEnv)
+  for (i in seq_along(modvars)) {
+    myor(modvars[i])
+  }
+  colnames(ortab) <- c("Variables", "Crude OR (95% CI), p-value")
+
+  cmodadj <- my.glm.mids(formula(paste0("EFgroup57 == '<=57' ~ ", paste(adjmodvars, collapse = " + "))),
+    family = binomial(link = "logit"), data = implogreg, subset = filt
+  )
+
+  scmodadj <- summary(pool(cmodadj))
+
+  nval <- length(scmodadj$estimate)
+
+  padj <- dF(scmodadj$p.value[2:nval], dig = 3)
+  padj <- replace(padj, padj == "0.000", "<0.001")
+
+  units <- left_join(data.frame(vars = rownames(scmodadj)[2:nval]), kontunits, by = "vars") %>%
+    mutate(units = replace_na(units, 1))
+
+
+  ortabadj <- cbind(rownames(scmodadj)[2:nval], paste0(
+    dF(exp(scmodadj$estimate[2:nval] * units$units), dig = 2),
+    " (", dF(exp(scmodadj$estimate[2:nval] - z05 * scmodadj$std.error[2:nval] * units$units), dig = 2),
+    "-", dF(exp(scmodadj$estimate[2:nval] + z05 * scmodadj$std.error[2:nval] * units$units), dig = 2), "), ",
+    padj
+  ))
+
+  colnames(ortabadj) <- c("Variables", "Adjusted OR (95% CI), p-value")
+
+  ortaball <- full_join(data.frame(ortab), data.frame(ortabadj), by = "Variables")
+
+  ## add footnote OR units to kontinous variables
+  kontunitsfoot <- kontunits %>%
+    group_by(units) %>%
+    mutate(foot = paste0(vars, collapse = ", ")) %>%
+    ungroup() %>%
+    group_by(foot) %>%
+    slice(1) %>%
+    ungroup() %>%
+    mutate(
+      foot2 = paste0(units, " for ", foot),
+      footuse = paste(foot2, collapse = " and ")
+    ) %>%
+    slice(1)
+
+  ortaball$Variables <- ifelse(stri_extract_first_words(ortaball$Variables) %in% kontunits$vars,
+    paste0(ortaball$Variables, footnote_marker_symbol(1)), ortaball$Variables
+  )
+
+  colnames(ortaball) <- c("Variables", "Crude OR (95% CI), p-value", "Adjusted OR (95% CI), p-value")
+  
+  write.xlsx(ortaball, paste0("./output/tabs/ortab_", filtname, "_", Sys.Date(), ".xlsx"), rowNames = FALSE)
+
+  footnote(
+    mykable(ortaball), 
+    symbol = c(
+      paste0("Odds ratios are presented in units of ", kontunitsfoot$footuse, ".")
+    )
+  )
+}
+```
+
+### Overall
+```{r logregoverall}
+logregFunc(quote(!is.na(IND_YRS)), filtname = "overall")
+```
+
+### Female
+```{r logregfem}
+logregFunc(filt = quote(IND_GEN == "Female"), filtname = "female")
+```
+
+### Male
+```{r logregmal}
+logregFunc(quote(IND_GEN == "Male"), filtname = "male")
+```

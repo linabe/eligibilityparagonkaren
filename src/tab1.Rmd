@@ -1,22 +1,9 @@
 ```{r}
 
-# check_allimpel <- !names(impdata)[!grepl("crit_|anyie|nomissing|ie_tmp|indexYear|arb_any|ace_any|logFSI_PROB#NP|PatID|diur_no|ie_", names(impdata))] %in% tabvars
-
-# if (any(check_allimpel)) {
-#  print(paste0(
-#    "Note to self: All imputed/eligibility variables are not included in table 1 ",
-#    names(impdata)[!grepl(
-#      "crit_|anyie|nomissing|ie_tmp|indexYear|arb_any|ace_any|logFSI_PROBNP|PatID|diur_no|ie_",
-#      names(impdata)
-#    )][check_allimpel]
-#  ))
-# }
-
 tab1Func <- function(pop, nr = NULL, export = FALSE) {
-  
   tab1data <- pdata %>%
     filter(!!enexpr(pop))
-    
+
   tab1.strat <- CreateTableOne(
     vars = tabvars,
     strata = "nomissing",
@@ -51,24 +38,23 @@ tab1Func <- function(pop, nr = NULL, export = FALSE) {
   if (export) write.xlsx(all, paste0("./output/tabs/tab1_karen_", Sys.Date(), ".xlsx"), rowNames = TRUE)
 
   rownamesadj <- rownames(all)
+  rownamestmp <- word(rownamesadj, sep = " = ")
 
   ## white space removed in kable function. Add HTML space.
   rownamesadj <- sub("^ ", "&nbsp;", rownamesadj)
 
   ## add footer to indicated which variabels are used as eligibilty variables
-  rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) %in% c(
+  rownamesadj <- ifelse(rownamestmp %in% c(
     elvars,
-    "raas",
-    "nonCVDeath3y"
+    "raas"
   ),
   paste0(rownamesadj, footnote_marker_symbol(1)), rownamesadj
   )
 
   ## add footer to indicated which variabels are used in imputation
-  rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) %in% c(
-    names(impvars),
+  rownamesadj <- ifelse(rownamestmp %in% c(
+    rownames(imp$predictorMatrix)[!rownames(imp$predictorMatrix) %in% noimpvars],
     "indexYear_cat",
-    "FSI_PROBNP",
     "raas"
   ),
   paste0(rownamesadj, footnote_marker_symbol(2)), rownamesadj
@@ -79,14 +65,9 @@ tab1Func <- function(pop, nr = NULL, export = FALSE) {
     paste0(rownamesadj, footnote_marker_symbol(3)), rownamesadj
   )
 
-  ## add footer to indicate that ntProBNP is included as log in imputation model
-  rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) == "FSI_PROBNP",
-    paste0(rownamesadj, footnote_marker_symbol(4)), rownamesadj
-  )
-
   ## add footer to indicate that raas included as acei and arb separatly in model
   rownamesadj <- ifelse(stri_extract_first_words(rownamesadj) == "raas",
-    paste0(rownamesadj, footnote_marker_symbol(5)), rownamesadj
+    paste0(rownamesadj, footnote_marker_symbol(4)), rownamesadj
   )
 
 
@@ -97,7 +78,6 @@ tab1Func <- function(pop, nr = NULL, export = FALSE) {
       "Used in eligibility criteria",
       "Included in imputation model",
       "In imputation model index year is included as a continous variable",
-      "In imputation model log(FSI_PROBNP) is included",
       "In imputation model and eligibility calculation ACEi and arb are included separetly"
     ),
     general = c("Categorical variables are presented with n (%) and continous variables with median [q1-q3]")

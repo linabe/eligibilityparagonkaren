@@ -16,6 +16,10 @@ The project uses the R package projectTemplate, http://projecttemplate.net/ and 
 
 Since the data is not available the code can not be run as is. 
 
+Workflow: 
+1. Run src/load_munge_cache.R or set loading and munging options in ProjectTemplate::reload.project() to TRUE in Statistical_report_PARAGONKaRen.Rmd
+2. Run Statistical_report_PARAGONKaRen.Rmd
+
 ## Publication
 
 ... 

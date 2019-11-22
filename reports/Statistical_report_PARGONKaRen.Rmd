@@ -1,6 +1,5 @@
 ---
 title: 'Statistical report: Eligibility PARAGON-HF in KaRen'
-subtitle: 'DRAFT'
 author: 'Statistician: Lina Benson'
   
 date: "`r Sys.Date()`"
@@ -37,17 +36,16 @@ knitr::opts_knit$set(root.dir = normalizePath("../"))
 # 1. Set options in config/global.dcf
 # 2. Load packages listed in config/global.dcf
 # 3. Import functions and code in lib directory
-# 4. Load data in data directory
-# 5. Run data manipulations in munge directory
-library(ProjectTemplate)
-load.project()
+# 4. Load cache
+
+ProjectTemplate::reload.project()
 ```             
 
 # Data handling
 
 ## Data source
 
-File karen 539.txt prepared by Camilla Hage 2019-05-15 and karen_cvdeath.sas7bdat. 
+File karen 539.txt prepared by Camilla Hage 2019-05-15. 
 
 ## Primary inclusion
 
@@ -64,27 +62,16 @@ First patient follow-up visit (when echo was performed): `r min(dmy(pdata$FSI_PR
 
 ```
 [@nephro]
-```{r codecreatevarspost, code = readLines("../munge/05-varsPostImp.R"), echo = TRUE, eval = FALSE}
-
-```
 
 # Statistical analysis
 
 ## Imputation 
 
-Imputation is performed for variables needed for the eligibility criteria using mice [@mice]. Since one specific value is needed for the criteria only one single imputation is performed using the variables specified in section [Baseline characteristics](#baschar). The analysis performed on the imputed dataset is considered the main analysis. 
+Missing data was imputed with multiple imputation using mice [@mice] for 10 dataset and 10 iterations for variables needed for the eligibility criteria and prediction model using the variables specified in section [Baseline characteristics](#baschar). Both cor_cur_any and ihd_any are included in the imputation model (cor_cur_any is needed for the eligibility criteria calculation and ihd_any for the associations (logistic regression) model), however, since cor_cur_any is a subgroup of ihd_any this is only imputed, not used for the imputation of other variables. The same applies to stroke_cur_any and stroke_any. 
 
-```{r}
-if (any(impdata$nomissing == FALSE)) print(paste0("Note to self: All eligibility variables are not imputed "))
-```
+In the eligibility calculation, since one specific value is needed for each individual, the median is used for the continuous variables and the mode for categorical variables. If multiple modes exist, the lower value is used. The analysis performed on the imputed dataset is considered the main analysis for the eligibility calculation. 
 
-## Subgroup analysis
-
-In addition all analyses are also performed seperatly for females and males.  
-
-## Scenarios
-
-The analysis is performed for three scenarios, the literal scenario (all available criteria), the pragmatic scenario and the label scenario (variations of). 
+Note that in the subgroup presentation of EF (<=57%, >57%), the imputed EF is used, this means that the number of observations in the section {#baschar} will be smaller for these subgroups compared to the following tables.  
 
 ## Consistency analysis
 
@@ -96,11 +83,19 @@ An analysis is also performed on a complete case dataset, where only patients wi
 
 An analysis is also performed were patients with missing values for eligibility variables were assumed to be eligible for inclusion for the criteria using the variables with missing values ("Missing as eligible"). 
 
+## Subgroup analysis
+
+In addition all analyses are also performed separately for females and males and in EF <=57% and >57% .  
+
+## Scenarios
+
+The analysis is performed for three scenarios, the literal scenario (all available criteria), the pragmatic scenario and the label scenario (variations of). 
+
 # Results
 
 ## Baseline characteristics {#baschar}
 
-Baseline characteristics are presented by patients in the completes case dataset (non missing observations for all eligibility variables) and patients with missing observations for any of the eligibility variables. Imputed values are not shown in the table. 
+Baseline characteristics are presented by patients in the completes case dataset (non-missing observations for all eligibility variables) and patients with missing observations for any of the eligibility variables. Imputed values are not shown in the table. 
 
 ```{r tab1, child = "../src/tab1.Rmd"}
 
@@ -126,13 +121,29 @@ The size of the dots are dependent on how many patients were not eligible due to
 
 ```
 
-## Baseline characteristics by eligibilty
+## Baseline characteristics by eligibility
 
-Baseline characteristics are presented by patients eligible and not eligible according to the three different calculations. Imputed values are not shown in the table. Note that variables used in the eligibilty criteria, or are subsets or in other ways related to the variables used in the eligibilty criteria, should be viewed with caution. 
+Baseline characteristics are presented by patients eligible and not eligible according to the three different calculations. Imputed values are not shown in the table. Note that variables used in the eligibility criteria, or are subsets or in other ways related to the variables used in the eligibility criteria, should be viewed with caution. 
 
 ```{r tabel, child = "../src/tabByEligibility.Rmd"}
 
 ```
+
+## Patient characteristics associated with EF≤57%
+
+Odds ratios and corresponding 95% CI are estimated using logistic regression. The level of significance is set to 5%, two-sided. No adjustment for multiple comparisons were made and therefore the results should be viewed with some care.
+
+Liver and syncope were not included due to too few cases  / EF group. 
+
+Variables for the crude and adjusted models were selected based on clinical relevance.
+
+```{r logreg, child = "../src/logreg.Rmd"}
+
+```
+
+### Assumptions
+
+Outliers were investigated with Cook's distance, multicollinearity with the variance inflation factor and linearity for age by plotting the functional form in the adjusted model in the overall population. No action was deemed necessary.    
 
 # Reproducibility
 
@@ -146,6 +157,6 @@ sessionInfo()
 
 ## R code
 
-The R code for all data handling and statistical analyses are found: https://github.com/linabe/eligibilityparagonkaren. On publication, since this report is placed there, the repository will be made public in order to link to it from the resulting article for increased transparency and code sharing. No data or output is stored in the repository. 
+The R code for all data handling and statistical analyses are found: https://github.com/linabe/eligibilityparagonkaren. On publication the repository is made public in order to link to it from the resulting article for increased transparency and code sharing. No data or output is stored in the repository. 
 
 # References

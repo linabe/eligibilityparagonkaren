@@ -33,7 +33,10 @@ incexlFunc <- function(pop, nr = NULL, export = FALSE) {
     )
   )
 
-  flowtab <- rbind(flowtab, funcIEfake("3. LVEF >=45% by echocardiography during the screening epoch, or within 6 months prior to screening visit (in primary inclusion)"))
+  flowtab <- rbind(
+    flowtab,
+    funcIEfake("3. LVEF >=45% by echocardiography during the screening epoch, or within 6 months prior to screening visit (in primary inclusion)")
+  )
 
   ## ska MRA vara med diuretia inkl MRA (UP)
   flowtab <- rbind(flowtab, funcIETab(
@@ -212,7 +215,6 @@ incexlFunc <- function(pop, nr = NULL, export = FALSE) {
 
   flowtab <- rbind(flowtab, funcIEfake("26. b. Serum potassium >5.4 mmol/l (mEq/l) at visit 103 or visit 199/201 "))
 
-  # Waiting for reply.
   flowtab <- rbind(flowtab, funcIEfake("27. Death within 3 years from non-CV casue"))
 
   flowtab <- rbind(flowtab, funcIEfake("28. History of noncompliance to medical regimens and patients who are considered potentially unreliable"))
@@ -255,7 +257,7 @@ incexlFunc <- function(pop, nr = NULL, export = FALSE) {
   ))
 
   flowtab <- rbind(flowtab, funcSumIEAll(
-    "Eligible (all criteria)",
+    "Eligible (literal scenario) all criteria",
     "^ie_in|^ie_ex",
     impdata_tmp, pdata_tmp
   ))
