@@ -1,6 +1,6 @@
 ```{r}
 
-tab1Func <- function(pop, nr = NULL, export = FALSE) {
+tab1Func <- function(pop, exportname, export = FALSE) {
   tab1data <- pdata %>%
     filter(!!enexpr(pop))
 
@@ -34,8 +34,8 @@ tab1Func <- function(pop, nr = NULL, export = FALSE) {
     "No missing for any eligibilty variable", "Missing (%)"
   )
 
-  ## Export to Excel
-  if (export) write.xlsx(all, paste0("./output/tabs/tab1_karen_", Sys.Date(), ".xlsx"), rowNames = TRUE)
+  # Export to Excel
+  if (export) write.xlsx(all, paste0("./output/tabs/tab1_karen_", exportname, "_", Sys.Date(), ".xlsx"), rowNames = TRUE)
 
   rownamesadj <- rownames(all)
   rownamestmp <- word(rownamesadj, sep = " = ")
@@ -88,12 +88,12 @@ tab1Func <- function(pop, nr = NULL, export = FALSE) {
 
 ### Overall
 ```{r baseoverall}
-tab1Func(!is.na(IND_YRS))
+tab1Func(!is.na(IND_YRS), exportname = "tot", export = TRUE)
 ```
 
 ### Subgroup: Females
 ```{r basef}
-tab1Func(IND_GEN == "Female")
+tab1Func(IND_GEN == "Female", exportname = "female", export = TRUE)
 ```
 
 ### Subgroup: Males
@@ -103,7 +103,7 @@ tab1Func(IND_GEN == "Male")
 
 ### Subgroup: EF <= 57%
 ```{r baseu57}
-tab1Func(EFgroup57 == "<=57")
+tab1Func(EFgroup57 == "<=57", exportname = "under57", export = TRUE)
 ```
 
 ### Subgroup: EF > 57%

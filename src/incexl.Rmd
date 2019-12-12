@@ -1,6 +1,6 @@
 ```{r}
 
-incexlFunc <- function(pop, nr = NULL, export = FALSE) {
+incexlFunc <- function(pop, exportname, export = FALSE) {
   if (exists("flowtab")) rm(flowtab, envir = .GlobalEnv)
   if (exists("impdata_tmp")) rm(impdata_tmp, envir = .GlobalEnv)
   if (exists("pdata_tmp")) rm(pdata_tmp, envir = .GlobalEnv)
@@ -317,9 +317,10 @@ incexlFunc <- function(pop, nr = NULL, export = FALSE) {
     impdata_tmp, pdata_tmp
   ))
 
-  ## Export to Excel
+  # Export to Excel
+  
   if (export) {
-    write.xlsx(flowtab, paste0("./output/tabs/tabincexc_karen_", Sys.Date(), ".xlsx"),
+    write.xlsx(flowtab, paste0("./output/tabs/tabincexc_karen_", exportname, "_", Sys.Date(), ".xlsx"),
       rowNames = FALSE
     )
   }
@@ -336,12 +337,12 @@ incexlFunc <- function(pop, nr = NULL, export = FALSE) {
 
 ### Overall
 ```{r ietaboverall}
-incexlFunc(!is.na(IND_YRS))
+incexlFunc(!is.na(IND_YRS), exportname = "tot", export = TRUE)
 ```
 
 ### Subgroup: Females
 ```{r ietabf}
-incexlFunc(IND_GEN == "Female")
+incexlFunc(IND_GEN == "Female", exportname = "female", export = TRUE)
 ```
 
 ### Subgroup: Males
@@ -351,7 +352,7 @@ incexlFunc(IND_GEN == "Male")
 
 ### Subgroup: EF <= 57%
 ```{r ietabu57}
-incexlFunc(EFgroup57 == "<=57")
+incexlFunc(EFgroup57 == "<=57", exportname = "under57", export = TRUE)
 ```
 
 ### Subgroup: EF > 57%

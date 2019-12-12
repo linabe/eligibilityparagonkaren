@@ -1,6 +1,6 @@
 ```{r}
 
-logregFunc <- function(filt, filtname) {
+logregFunc <- function(filt, filtname, exportname, export = FALSE) {
   if (filtname %in% c("female", "male")) {
     modvars <- modvars[modvars != "IND_GEN"]
     adjmodvars <- adjmodvars[adjmodvars != "IND_GEN"]
@@ -91,7 +91,7 @@ logregFunc <- function(filt, filtname) {
 
   colnames(ortaball) <- c("Variables", "Crude OR (95% CI), p-value", "Adjusted OR (95% CI), p-value")
   
-  write.xlsx(ortaball, paste0("./output/tabs/ortab_", filtname, "_", Sys.Date(), ".xlsx"), rowNames = FALSE)
+  if (export) write.xlsx(ortaball, paste0("./output/tabs/ortab_karen_", exportname, "_", Sys.Date(), ".xlsx"), rowNames = FALSE)
 
   footnote(
     mykable(ortaball), 
@@ -104,12 +104,14 @@ logregFunc <- function(filt, filtname) {
 
 ### Overall
 ```{r logregoverall}
-logregFunc(quote(!is.na(IND_YRS)), filtname = "overall")
+logregFunc(quote(!is.na(IND_YRS)), filtname = "overall", 
+           exportname = "tot", export = TRUE)
 ```
 
 ### Female
 ```{r logregfem}
-logregFunc(filt = quote(IND_GEN == "Female"), filtname = "female")
+logregFunc(filt = quote(IND_GEN == "Female"), filtname = "female", 
+           exportname = "female", export = TRUE)
 ```
 
 ### Male
