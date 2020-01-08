@@ -18,7 +18,7 @@ pred[c("cor_cur_any", "stroke_cur_any"), ] <- 0
 
 ## change method used in impuation to prop odds model and none
 meth <- ini$method
-meth[c("smoking", "FSI_NYHA")] <- "polr"
+meth[c("FSI_NYHA")] <- "polr"
 meth[noimpvars] <- "" # number of diuretics not imputed but diuretics any imputed
 
 imp <- mice(pdata,

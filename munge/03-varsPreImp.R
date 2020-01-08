@@ -63,10 +63,11 @@ pdata <- pdata %>%
     ) == "Yes") > 0),
 
     smoking = case_when(
-      is.na(HIS_ASSCURSMO) | is.na(HIS2_ASSCURSMO) | is.na(HIS3_ASSCURSMO) ~ NA_character_,
-      HIS3_ASSCURSMO == "Yes" ~ "Current",
-      (HIS_ASSCURSMO == "Yes" | HIS2_ASSCURSMO == "Yes") & HIS3_ASSCURSMO == "No" ~ "Former",
-      HIS_ASSCURSMO == "No" & HIS2_ASSCURSMO == "No" & HIS3_ASSCURSMO == "No" ~ "Never"
+      is.na(HIS3_ASSCURSMO) & is.na(HIS2_ASSCURSMO) & is.na(HIS_ASSCURSMO) &
+        is.na(HIS3_ASSPRESMO) & is.na(HIS2_ASSPRESMO) & is.na(HIS_ASSPRESMO) ~ NA_character_,
+      HIS3_ASSCURSMO == "Yes" | HIS2_ASSCURSMO == "Yes" | HIS_ASSCURSMO == "Yes" |
+        HIS3_ASSPRESMO == "Yes" | HIS2_ASSPRESMO == "Yes" | HIS_ASSPRESMO == "Yes" ~ "Ever",
+      TRUE ~ "Never"
     ),
 
     diabetes_any = comFunc(rowSums(select(., HIS_ASSDIAB1, HIS2_ASSDIAB1, HIS3_ASSDIAB1, HIS_ASSDIAB2, HIS2_ASSDIAB2, HIS3_ASSDIAB2) == "Yes") > 0),
