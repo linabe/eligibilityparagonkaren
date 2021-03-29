@@ -85,7 +85,7 @@ An analysis is also performed were patients with missing values for eligibility 
 
 ## Subgroup analysis
 
-In addition all analyses are also performed separately for females and males and in EF <=57% and >57% .  
+In addition all analyses are also performed separately for females and males and in EF <=57% and >57%.  
 
 ## Scenarios
 
@@ -108,6 +108,10 @@ The number prior to the respective criteria are indicating the numbers in Table 
 The number and percentage indicates the remaining cohort after applying the respective criteria. The criteria are therefore not ordered and mutually exclusive.
 
 ```{r incexl, child = "../src/incexl.Rmd"}
+
+```
+
+```{r incexlfda, child = "../src/incexlfda.Rmd"}
 
 ```
 

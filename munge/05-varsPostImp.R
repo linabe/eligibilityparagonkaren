@@ -103,6 +103,19 @@ fixdata <- function(indata) {
       EFgroup57 = case_when(
         VG10 <= 57 ~ "<=57",
         VG10 > 57 ~ ">57"
+      ),
+      EFgroupfda = case_when(
+        VG10 < 54 & IND_GEN == "Female" | VG10 < 52 & IND_GEN == "Male" ~ "<54(female)/52(male)",
+        VG10 >= 54 & IND_GEN == "Female" | VG10 >= 52 & IND_GEN == "Male" ~ ">=54(female)/52(male)"
+      ),
+      fda_ie_in3 = case_when(
+        (EFgroupfda == "<54(female)/52(male)" | is.na(EFgroupfda)) ~ TRUE,
+        TRUE ~ FALSE
+      ), 
+      efnyhafda = case_when(
+        fda_ie_in3 & 
+        (FSI_NYHA %in% c("II", "III", "IV", "") | is.na(FSI_NYHA)) ~ "Yes",
+        TRUE ~ "No"
       )
     )
 

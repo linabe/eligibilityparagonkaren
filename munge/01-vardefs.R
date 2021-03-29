@@ -26,6 +26,7 @@ tabvars <- c(
   "indexYear_cat",
   "ef",
   "EFgroup57",
+  "EFgroupfda",
   "VG10",
   "FSI_NYHA",
   "FSI_NYHA_cat",

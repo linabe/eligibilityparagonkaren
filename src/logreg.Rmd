@@ -1,6 +1,6 @@
 ```{r}
 
-logregFunc <- function(filt, filtname, exportname, export = FALSE) {
+logregFunc <- function(filt, filtname, out, exportname, export = FALSE) {
   if (filtname %in% c("female", "male")) {
     modvars <- modvars[modvars != "IND_GEN"]
     adjmodvars <- adjmodvars[adjmodvars != "IND_GEN"]
@@ -17,7 +17,7 @@ logregFunc <- function(filt, filtname, exportname, export = FALSE) {
 
     units <- ifelse(xvar %in% kontunits$var, kontunits[kontunits$var == xvar, "units"], 1)
 
-    cmod <- my.glm.mids(formula(paste0("EFgroup57 == '<=57' ~ ", xvar)),
+    cmod <- my.glm.mids(formula(paste0(out, " ~ ", xvar)),
       family = binomial(link = "logit"), data = implogreg, subset = filt2
     )
 
@@ -45,7 +45,7 @@ logregFunc <- function(filt, filtname, exportname, export = FALSE) {
   }
   colnames(ortab) <- c("Variables", "Crude OR (95% CI), p-value")
 
-  cmodadj <- my.glm.mids(formula(paste0("EFgroup57 == '<=57' ~ ", paste(adjmodvars, collapse = " + "))),
+  cmodadj <- my.glm.mids(formula(paste0(out, " ~ ", paste(adjmodvars, collapse = " + "))),
     family = binomial(link = "logit"), data = implogreg, subset = filt
   )
 
@@ -104,17 +104,23 @@ logregFunc <- function(filt, filtname, exportname, export = FALSE) {
 
 ### Overall
 ```{r logregoverall}
-logregFunc(quote(!is.na(IND_YRS)), filtname = "overall", 
+logregFunc(quote(!is.na(IND_YRS)), filtname = "overall", out = "EFgroup57 == '<=57'", 
            exportname = "tot", export = TRUE)
 ```
 
 ### Female
 ```{r logregfem}
-logregFunc(filt = quote(IND_GEN == "Female"), filtname = "female", 
+logregFunc(filt = quote(IND_GEN == "Female"), filtname = "female", out = "EFgroup57 == '<=57'", 
            exportname = "female", export = TRUE)
 ```
 
 ### Male
 ```{r logregmal}
-logregFunc(quote(IND_GEN == "Male"), filtname = "male")
+logregFunc(quote(IND_GEN == "Male"), filtname = "male", out = "EFgroup57 == '<=57'")
+```
+
+### Overall FDA criteria
+```{r logregoverallfda}
+logregFunc(quote(!is.na(IND_YRS)), filtname = "overall EF <54(female)/52(male) & NYHA II-IV", out = "efnyhafda == 'Yes'", 
+           exportname = "totfda", export = TRUE)
 ```

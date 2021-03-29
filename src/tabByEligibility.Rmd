@@ -1,6 +1,6 @@
 ```{r}
 
-tabElFunc <- function(pop, nr = NULL, export = FALSE) {
+tabElFunc <- function(pop, nofda = FALSE, nr = NULL, export = FALSE, exportname) {
 
   ### Literal scenario
   pdata_tmp <- pdata %>%
@@ -121,17 +121,82 @@ tabElFunc <- function(pop, nr = NULL, export = FALSE) {
     explain = FALSE
   )
 
+  ### FDA scenario
+
+  if (!nofda){
+  pdata_tmp <- pdata %>%
+    filter(!!enexpr(pop)) %>%
+    mutate(eligi = fda_ie_in3 == FALSE | ie_in_pragscen_in5 == FALSE)
+  impdata_tmp <- impdata %>%
+    filter(!!enexpr(pop)) %>%
+    mutate(eligi_imp = fda_ie_in3 == FALSE | ie_in_pragscen_in5 == FALSE)
+
+  tabeldata.fda <- left_join(
+    pdata_tmp,
+    impdata_tmp %>% select(PatID, eligi_imp),
+    by = "PatID"
+  ) %>%
+    mutate_if(is_character, factor)
+
+  tab.imp.fda <- CreateTableOne(
+    vars = tabvars,
+    strata = "eligi_imp",
+    data = tabeldata.fda
+  )
+
+  tab.imp.fda <- print(tab.imp.fda,
+    varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+    nonnormal = tabvars, test = TRUE,
+    catDigits = 1, contDigits = 1,
+    explain = FALSE
+  )
+
+  tab.comp.fda <- CreateTableOne(
+    vars = tabvars,
+    strata = "eligi",
+    data = tabeldata.fda %>% filter(nomissing)
+  )
+
+  tab.comp.fda <- print(tab.comp.fda,
+    varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+    nonnormal = tabvars, test = TRUE,
+    catDigits = 1, contDigits = 1,
+    explain = FALSE
+  )
+
+  tab.missasel.fda <- CreateTableOne(
+    vars = tabvars,
+    strata = "eligi",
+    data = tabeldata.fda
+  )
+
+  tab.missasel.fda <- print(tab.missasel.fda,
+    varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+    nonnormal = tabvars, test = TRUE,
+    catDigits = 1, contDigits = 1,
+    explain = FALSE
+  )
+  }
+  
+  if (nofda){
   all <- cbind(
     tab.imp.lit[, 1:3], tab.comp.lit[, 1:3], tab.missasel.lit[, 1:3],
     tab.imp.prag[, 1:3], tab.comp.prag[, 1:3], tab.missasel.prag[, 1:3]
   )
+  } else{
+    all <- cbind(
+    tab.imp.lit[, 1:3], tab.comp.lit[, 1:3], tab.missasel.lit[, 1:3],
+    tab.imp.prag[, 1:3], tab.comp.prag[, 1:3], tab.missasel.prag[, 1:3],
+    tab.imp.fda[, 1:3], tab.comp.fda[, 1:3], tab.missasel.fda[, 1:3]
+  ) 
+  }
 
   colnames(all) <- c(
-    rep(c("Eligible", "Not eligible", "p-value"), 6)
+    rep(c("Eligible", "Not eligible", "p-value"), ifelse(nofda, 6, 9))
   )
 
   ## Export to Excel
-  if (export) write.xlsx(all, paste0("./output/tabs/tabByEligibilty_pragmatic_karen_", Sys.Date(), ".xlsx"), rowNames = TRUE)
+  if (export) write.xlsx(all, paste0("./output/tabs/tabByEligibilty_karen_", exportname, "_", Sys.Date(), ".xlsx"), rowNames = TRUE)
 
   rownamesadj <- rownames(all)
 
@@ -141,6 +206,7 @@ tabElFunc <- function(pop, nr = NULL, export = FALSE) {
   rownames(all) <- rownamesadj
 
 
+  if (nofda){
   myHeader <- c(
     " " = 1, "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3,
     "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3
@@ -152,6 +218,21 @@ tabElFunc <- function(pop, nr = NULL, export = FALSE) {
 
   myHeader2 <- c(" " = 1, "Literal scenario" = 9, "Pragmatic scenario" = 9)
   names(myHeader2) <- c(" ", "Literal scenario", "Pragmatic scenario")
+  } else{
+      myHeader <- c(
+    " " = 1, "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3,
+    "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3,
+    "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3
+  )
+  names(myHeader) <- c(
+    " ", "Imputed data", "Complete case", "Missing as eligible",
+    "Imputed data", "Complete case", "Missing as eligible", 
+    "Imputed data", "Complete case", "Missing as eligible"
+  )
+
+  myHeader2 <- c(" " = 1, "Literal scenario" = 9, "Pragmatic scenario" = 9, "FDA scenario" = 9)
+  names(myHeader2) <- c(" ", "Literal scenario", "Pragmatic scenario", "FDA scenario")
+  }
 
   footnote(mykable(all, row.names = TRUE) %>%
     add_header_above(myHeader) %>%
@@ -166,7 +247,7 @@ tabElFunc <- function(pop, nr = NULL, export = FALSE) {
 
 ### Overall
 ```{r Elbaseoverall}
-tabElFunc(!is.na(IND_YRS))
+tabElFunc(!is.na(IND_YRS), export = T, exportname = "tot")
 ```
 
 ### Subgroup: Females
@@ -186,6 +267,6 @@ tabElFunc(EFgroup57 == "<=57")
 
 ### Subgroup: EF > 57%
 ```{r Elbaseo57}
-tabElFunc(EFgroup57 == ">57")
+tabElFunc(EFgroup57 == ">57", nofda = TRUE)
 ```
 

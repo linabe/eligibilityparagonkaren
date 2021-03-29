@@ -1,0 +1,83 @@
+```{r}
+
+incexlFuncfda <- function(pop, exportname, export = FALSE) {
+  if (exists("flowtab")) rm(flowtab, envir = .GlobalEnv)
+  if (exists("impdata_tmp")) rm(impdata_tmp, envir = .GlobalEnv)
+  if (exists("pdata_tmp")) rm(pdata_tmp, envir = .GlobalEnv)
+
+  impdata_tmp <- impdata %>%
+    filter(!!enexpr(pop))
+
+  pdata_tmp <- pdata %>%
+    filter(!!enexpr(pop))
+
+  Nimp <- nrow(impdata_tmp)
+  Ncomp <- nrow(pdata_tmp %>% filter(nomissing))
+  Nel <- nrow(pdata_tmp)
+
+
+  flowtab <- data.frame("No of patients", Nimp, Ncomp, Nel)
+  colnames(flowtab) <- c("", rep("out", 3))
+
+  flowtab <- rbind(flowtab, funcIEfake("**Inclusion criteria**"))
+
+
+  flowtab <- rbind(
+    flowtab,
+    funcIETab(
+      ievar = "fda_ie_in3",
+      paste0("LVEF < 54(female)/52(male)"),
+      impdata_tmp, pdata_tmp
+    )
+  )
+
+  flowtab <- rbind(flowtab, funcIETab(
+    "ie_in_pragscen_in5",
+    paste0("5. NYHA II-IV", footnote_marker_symbol(1)),
+    impdata_tmp, pdata_tmp
+  ))
+
+  colnames(flowtab) <- c(
+    "Criteria",
+    "Imputed data",
+    "Complete case",
+    "Missing as eligible"
+  )
+
+  flowtab <- rbind(flowtab, funcSumIEAll(
+    "Eligible (FDA scenario) all criteria",
+    "^fda_ie_in3|^ie_in_pragscen_in5",
+    impdata_tmp, pdata_tmp
+  ))
+
+  # Export to Excel
+
+  if (export) {
+    write.xlsx(flowtab, paste0("./output/tabs/tabincexcfda_karen_", exportname, "_", Sys.Date(), ".xlsx"),
+      rowNames = FALSE
+    )
+  }
+
+  mykable(flowtab)
+}
+```
+
+### Overall FDA
+```{r ietaboverallfda}
+incexlFuncfda(pop = !is.na(IND_YRS), exportname = "tot", export = TRUE)
+```
+
+### Subgroup FDA: Females
+```{r ietabffda}
+incexlFuncfda(IND_GEN == "Female", exportname = "female", export = TRUE)
+```
+
+### Subgroup FDA: Males
+```{r ietabmfda}
+incexlFuncfda(IND_GEN == "Male")
+```
+
+### Subgroup FDA: EF <= 57%
+```{r ietabu57fda}
+incexlFuncfda(EFgroup57 == "<=57", exportname = "under57", export = TRUE)
+```
