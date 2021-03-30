@@ -62,8 +62,8 @@ logregFunc <- function(filt, filtname, out, exportname, export = FALSE) {
 
   ortabadj <- cbind(rownames(scmodadj)[2:nval], paste0(
     dF(exp(scmodadj$estimate[2:nval] * units$units), dig = 2),
-    " (", dF(exp(scmodadj$estimate[2:nval] - z05 * scmodadj$std.error[2:nval] * units$units), dig = 2),
-    "-", dF(exp(scmodadj$estimate[2:nval] + z05 * scmodadj$std.error[2:nval] * units$units), dig = 2), "), ",
+    " (", dF(exp((scmodadj$estimate[2:nval] - z05 * scmodadj$std.error[2:nval]) * units$units), dig = 2),
+    "-", dF(exp((scmodadj$estimate[2:nval] + z05 * scmodadj$std.error[2:nval]) * units$units), dig = 2), "), ",
     padj
   ))
 
