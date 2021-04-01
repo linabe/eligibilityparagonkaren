@@ -102,25 +102,25 @@ logregFunc <- function(filt, filtname, out, exportname, export = FALSE) {
 }
 ```
 
-### Overall
+### Overall EF <=57
 ```{r logregoverall}
 logregFunc(quote(!is.na(IND_YRS)), filtname = "overall", out = "EFgroup57 == '<=57'", 
            exportname = "tot", export = TRUE)
 ```
 
-### Female
+### Female EF <=57
 ```{r logregfem}
 logregFunc(filt = quote(IND_GEN == "Female"), filtname = "female", out = "EFgroup57 == '<=57'", 
            exportname = "female", export = TRUE)
 ```
 
-### Male
+### Male EF <=57
 ```{r logregmal}
 logregFunc(quote(IND_GEN == "Male"), filtname = "male", out = "EFgroup57 == '<=57'")
 ```
 
-### Overall FDA criteria
+### Overall EF <54(female)/52(male)
 ```{r logregoverallfda}
-logregFunc(quote(!is.na(IND_YRS)), filtname = "overall EF <54(female)/52(male) & NYHA II-IV", out = "efnyhafda == 'Yes'", 
-           exportname = "totfda", export = TRUE)
+logregFunc(quote(!is.na(IND_YRS)), filtname = "overall EF <54(female)/52(male)", out = "EFgroupfda == '<54(female)/52(male)'", 
+           exportname = "totef5452", export = TRUE)
 ```

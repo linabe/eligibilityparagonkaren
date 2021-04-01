@@ -133,7 +133,7 @@ Baseline characteristics are presented by patients eligible and not eligible acc
 
 ```
 
-## Patient characteristics associated with EF≤57%
+## Patient characteristics associated with EF
 
 Odds ratios and corresponding 95% CI are estimated using logistic regression. The level of significance is set to 5%, two-sided. No adjustment for multiple comparisons were made and therefore the results should be viewed with some care.
 

@@ -119,7 +119,8 @@ logregFuncplot(filt = quote(!is.na(IND_YRS)), figname = "forestoref57", out = "E
 
 
 
-# Overall FDA criteria
-logregFuncplot(quote(!is.na(IND_YRS)), figname = "forestfda", out = "efnyhafda == 'Yes'", xlab = "FDA label", ticks = c(0.4, 0.7, 1, 1.5, 2.5), 
-               mi = 0.4)
+# Overall 54/52
+logregFuncplot(quote(!is.na(IND_YRS)), figname = "forestef5452", out = "EFgroupfda == '<54(female)/52(male)'", xlab = "EF<54/52%", 
+               ticks = c(0.1, 0.4, 1, 4, 7), 
+               mi = 0.1, ma = 7)
 
