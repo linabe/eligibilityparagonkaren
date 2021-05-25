@@ -124,3 +124,9 @@ logregFuncplot(quote(!is.na(IND_YRS)), figname = "forestef5452", out = "EFgroupf
                ticks = c(0.1, 0.4, 1, 4, 7), 
                mi = 0.1, ma = 7)
 
+
+# Overall 64/62
+logregFuncplot(quote(!is.na(IND_YRS)), figname = "forestef6462", out = "EFgroup6462 == '<64(female)/62(male)'", xlab = "EF<64/62%", 
+               ticks = c(0.3, 0.5, 1, 2, 3), 
+               mi = 0.3, ma = 3)
+

@@ -116,6 +116,19 @@ fixdata <- function(indata) {
         fda_ie_in3 & 
         (FSI_NYHA %in% c("II", "III", "IV", "") | is.na(FSI_NYHA)) ~ "Yes",
         TRUE ~ "No"
+      ),
+      EFgroup6462 = case_when(
+        VG10 < 64 & IND_GEN == "Female" | VG10 < 62 & IND_GEN == "Male" ~ "<64(female)/62(male)",
+        VG10 >= 64 & IND_GEN == "Female" | VG10 >= 62 & IND_GEN == "Male" ~ ">=64(female)/62(male)"
+      ),
+      ef6462_ie_in3 = case_when(
+        (EFgroup6462 == "<64(female)/62(male)" | is.na(EFgroup6462)) ~ TRUE,
+        TRUE ~ FALSE
+      ), 
+      efnyha6462 = case_when(
+        ef6462_ie_in3 & 
+          (FSI_NYHA %in% c("II", "III", "IV", "") | is.na(FSI_NYHA)) ~ "Yes",
+        TRUE ~ "No"
       )
     )
 

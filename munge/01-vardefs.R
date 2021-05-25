@@ -27,6 +27,7 @@ tabvars <- c(
   "ef",
   "EFgroup57",
   "EFgroupfda",
+  "EFgroup6462",
   "VG10",
   "FSI_NYHA",
   "FSI_NYHA_cat",

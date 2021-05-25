@@ -124,3 +124,9 @@ logregFunc(quote(IND_GEN == "Male"), filtname = "male", out = "EFgroup57 == '<=5
 logregFunc(quote(!is.na(IND_YRS)), filtname = "overall EF <54(female)/52(male)", out = "EFgroupfda == '<54(female)/52(male)'", 
            exportname = "totef5452", export = TRUE)
 ```
+
+### Overall EF <64(female)/62(male)
+```{r logregoverallef6462}
+logregFunc(quote(!is.na(IND_YRS)), filtname = "overall EF <64(female)/62(male)", out = "EFgroup6462 == '<64(female)/62(male)'", 
+           exportname = "totef6462", export = TRUE)
+```

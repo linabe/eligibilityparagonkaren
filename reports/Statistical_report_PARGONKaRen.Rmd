@@ -107,11 +107,15 @@ The number prior to the respective criteria are indicating the numbers in Table 
 
 The number and percentage indicates the remaining cohort after applying the respective criteria. The criteria are therefore not ordered and mutually exclusive.
 
-```{r incexl, child = "../src/incexl.Rmd"}
+```{r, child = "../src/incexl.Rmd"}
 
 ```
 
-```{r incexlfda, child = "../src/incexlfda.Rmd"}
+```{r, child = "../src/incexlfda.Rmd"}
+
+```
+
+```{r, child = "../src/incexlef6462.Rmd"}
 
 ```
 

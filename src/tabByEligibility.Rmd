@@ -176,6 +176,61 @@ tabElFunc <- function(pop, nofda = FALSE, nr = NULL, export = FALSE, exportname)
     catDigits = 1, contDigits = 1,
     explain = FALSE
   )
+  
+  ### 64/62 scenario
+
+  pdata_tmp <- pdata %>%
+    filter(!!enexpr(pop)) %>%
+    mutate(eligi = ef6462_ie_in3 == FALSE | ie_in_pragscen_in5 == FALSE)
+  impdata_tmp <- impdata %>%
+    filter(!!enexpr(pop)) %>%
+    mutate(eligi_imp = ef6462_ie_in3 == FALSE | ie_in_pragscen_in5 == FALSE)
+
+  tabeldata.ef6462 <- left_join(
+    pdata_tmp,
+    impdata_tmp %>% select(PatID, eligi_imp),
+    by = "PatID"
+  ) %>%
+    mutate_if(is_character, factor)
+
+  tab.imp.ef6462 <- CreateTableOne(
+    vars = tabvars,
+    strata = "eligi_imp",
+    data = tabeldata.ef6462
+  )
+
+  tab.imp.ef6462 <- print(tab.imp.ef6462,
+    varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+    nonnormal = tabvars, test = TRUE,
+    catDigits = 1, contDigits = 1,
+    explain = FALSE
+  )
+
+  tab.comp.ef6462 <- CreateTableOne(
+    vars = tabvars,
+    strata = "eligi",
+    data = tabeldata.ef6462 %>% filter(nomissing)
+  )
+
+  tab.comp.ef6462 <- print(tab.comp.ef6462,
+    varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+    nonnormal = tabvars, test = TRUE,
+    catDigits = 1, contDigits = 1,
+    explain = FALSE
+  )
+
+  tab.missasel.ef6462 <- CreateTableOne(
+    vars = tabvars,
+    strata = "eligi",
+    data = tabeldata.ef6462
+  )
+
+  tab.missasel.ef6462 <- print(tab.missasel.ef6462,
+    varLabels = TRUE, missing = FALSE, printToggle = FALSE,
+    nonnormal = tabvars, test = TRUE,
+    catDigits = 1, contDigits = 1,
+    explain = FALSE
+  )
   }
   
   if (nofda){
@@ -187,12 +242,13 @@ tabElFunc <- function(pop, nofda = FALSE, nr = NULL, export = FALSE, exportname)
     all <- cbind(
     tab.imp.lit[, 1:3], tab.comp.lit[, 1:3], tab.missasel.lit[, 1:3],
     tab.imp.prag[, 1:3], tab.comp.prag[, 1:3], tab.missasel.prag[, 1:3],
-    tab.imp.fda[, 1:3], tab.comp.fda[, 1:3], tab.missasel.fda[, 1:3]
+    tab.imp.fda[, 1:3], tab.comp.fda[, 1:3], tab.missasel.fda[, 1:3],
+    tab.imp.ef6462[, 1:3], tab.comp.ef6462[, 1:3], tab.missasel.ef6462[, 1:3]
   ) 
   }
 
   colnames(all) <- c(
-    rep(c("Eligible", "Not eligible", "p-value"), ifelse(nofda, 6, 9))
+    rep(c("Eligible", "Not eligible", "p-value"), ifelse(nofda, 6, 12))
   )
 
   ## Export to Excel
@@ -222,16 +278,18 @@ tabElFunc <- function(pop, nofda = FALSE, nr = NULL, export = FALSE, exportname)
       myHeader <- c(
     " " = 1, "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3,
     "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3,
+    "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3,
     "Imputed data" = 3, "Complete case" = 3, "Missing as eligible" = 3
   )
   names(myHeader) <- c(
     " ", "Imputed data", "Complete case", "Missing as eligible",
     "Imputed data", "Complete case", "Missing as eligible", 
+    "Imputed data", "Complete case", "Missing as eligible", 
     "Imputed data", "Complete case", "Missing as eligible"
   )
 
-  myHeader2 <- c(" " = 1, "Literal scenario" = 9, "Pragmatic scenario" = 9, "FDA scenario" = 9)
-  names(myHeader2) <- c(" ", "Literal scenario", "Pragmatic scenario", "FDA scenario")
+  myHeader2 <- c(" " = 1, "Literal scenario" = 9, "Pragmatic scenario" = 9, "FDA scenario" = 9, "EF 64/62% scenario" = 9)
+  names(myHeader2) <- c(" ", "Literal scenario", "Pragmatic scenario", "FDA scenario", "EF 64/62% scenario")
   }
 
   footnote(mykable(all, row.names = TRUE) %>%
